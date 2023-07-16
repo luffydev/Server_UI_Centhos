@@ -8,7 +8,7 @@ namespace SDK.Singleton
 {
     public abstract class Singleton<T> where T : Singleton<T>
     {
-        private static T mInstance;
+        private static T? mInstance;
         private static readonly object mLockedObject = new object();
 
         protected Singleton()

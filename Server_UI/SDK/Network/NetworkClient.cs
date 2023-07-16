@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 using System.Net;
 using System.Net.Sockets;
+using System.Diagnostics;
 
 using SDK.Singleton;
 
@@ -13,12 +10,13 @@ namespace SDK.Network
     public class NetworkClient : Singleton<NetworkClient>
     {
         private bool mConnected = false;
-        private Socket mSocket = null;
+        private Socket mSocket;
         private byte[] mBuffer = new byte[1024];
         
         //ctor
         public NetworkClient()
         {
+            mSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         }
 
         public void Connect(String pHost, int pPort)
@@ -28,9 +26,7 @@ namespace SDK.Network
             {
                 try
                 {
-                    mSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                     mSocket.Connect(new IPEndPoint(IPAddress.Parse(pHost), pPort));
-
                     mSocket.BeginReceive(mBuffer, 0, mBuffer.Length, SocketFlags.None, ReceiveCallback, null);
 
 
@@ -38,7 +34,7 @@ namespace SDK.Network
                 }
                 catch(Exception ex)
                 {
-                    Console.WriteLine("Erreur de la connexion au serveur : {0}", ex.Message);
+                    Trace.WriteLine(("Erreur de la connexion au serveur : " + ex.Message));
                 }
 
                 
@@ -52,18 +48,26 @@ namespace SDK.Network
 
                 int lReceivedBytes = mSocket.EndReceive(pResult);
 
-                if (lReceivedBytes > 0 && (lReceivedBytes > (sizeof(UInt32) * 2)))
+                if ( lReceivedBytes > 0 && (lReceivedBytes >= (sizeof(UInt32) * 2) + sizeof(UInt64)) )
                 {
                     byte[] lReceivedData = new byte[lReceivedBytes];
                     Array.Copy(mBuffer, lReceivedData, lReceivedBytes);
 
                     NetworkPacket lPacket = new NetworkPacket(mBuffer);
 
+                    OpcodeStore lStore = Singleton<OpcodeStore>.Instance;
+
+                    if(lStore.OpcodeExist((uint)lPacket.GetOpcode()))
+                    {
+                        OpcodeStruct lStruct = lStore.GetOpcodeStruct((uint)lPacket.GetOpcode());
+                        lStruct.handler(lPacket, this);
+                    }
+
                     mSocket.BeginReceive(mBuffer, 0, mBuffer.Length, SocketFlags.None, ReceiveCallback, null);
 
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
             }
         }
@@ -73,12 +77,12 @@ namespace SDK.Network
             try
             {
                 mSocket.Send(pData);
-                Console.WriteLine("Données envoyées au serveur (bytes)");
+                Trace.WriteLine(("Données envoyées au serveur : " + pData.Length.ToString() + " bytes"));
 
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Erreur lors de l'envoi des données au serveur : {0}", ex.Message);
+                Trace.WriteLine(("Erreur lors de l'envoi des données au serveur : " + ex.Message));
             }
         }
         public void Disconnect()
@@ -89,11 +93,11 @@ namespace SDK.Network
                 mSocket.Close();
                 mConnected = false;
 
-                Console.WriteLine("Déconnecté du serveur");
+                Trace.WriteLine("Déconnecté du serveur");
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Erreur lors de la déconnexion : {0}", ex.Message);
+                Trace.WriteLine(("Erreur lors de la déconnexion : " + ex.Message));
             }
         }
 

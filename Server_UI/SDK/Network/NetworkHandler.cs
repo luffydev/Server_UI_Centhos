@@ -1,9 +1,4 @@
-﻿using SDK.Network;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 
 namespace SDK.Network
 {
@@ -11,12 +6,17 @@ namespace SDK.Network
     {
         public static void Handle_NULL(NetworkPacket pPacket, NetworkClient pClient)
         {
-            Console.WriteLine("Handle_NULL: Packet received - OpCode: {0}, Client: {1}", pPacket.GetOpcode(), pClient);
+            Trace.WriteLine(("Handle_NULL: Packet received - OpCode: ", pPacket.GetOpcode().ToString()));
         }
 
         public static void Handle_Connect_Challenge_Response(NetworkPacket pPacket, NetworkClient pClient)
         {
+            Trace.WriteLine("RECV Handle_Connect_Challenge_Response let's handle it");
 
+            byte lStatus = pPacket.ReadByte();
+            String lKey = pPacket.ReadString();
+
+            Trace.WriteLine("TEST : " + lKey);
         }
     }
 }

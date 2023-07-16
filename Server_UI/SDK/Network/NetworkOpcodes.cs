@@ -8,13 +8,13 @@ using SDK.Singleton;
 
 namespace SDK.Network
 {
-    enum Opcodes
+    public enum Opcodes
     {
         MSG_NONE,
-        CMSG_CONNECT_CHALLENGE_REQUEST = 0x0001,
-        SMSG_CONNECT_CHALLENGE_RESPONSE = 0x0002,
-        CMSG_CONNECT_CLIENT_LIST_REQ = 0X0003,
-        SMSG_CONNECT_CLIENT_LIST_RESULT = 0x0004,
+        CMSG_CONNECT_CHALLENGE_REQUEST             = 0x0001,
+        SMSG_CONNECT_CHALLENGE_RESPONSE            = 0x0002,
+        CMSG_CONNECT_CLIENT_LIST_REQ               = 0X0003,
+        SMSG_CONNECT_CLIENT_LIST_RESULT            = 0x0004,
     }
     public struct OpcodeStruct 
     {
